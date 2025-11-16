@@ -1,0 +1,38 @@
+# CSE data directory
+cse/data/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual environments
+.venv/
+venv/
+
+# OS files
+.DS_Store
+
+# IDE settings
+.vscode/
+
+# WireGuard private keys and actual configs (keep only .conf examples)
+wireguard-onem2m-setup/configs/wg0.conf
+wireguard-onem2m-setup/configs/*.key
+/etc/wireguard/
+
+# Log files
+logs/
+*.log
+
+# Backup files
+*.bkp
+*-backup.yml
+*.backup
+*-bkp.py
+
+# ML models (regenerate with create_model.py)
+*.pkl
+
+# Docker volumes
+postgres-data/
+acme-data/

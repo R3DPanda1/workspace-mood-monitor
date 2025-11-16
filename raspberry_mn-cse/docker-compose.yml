@@ -1,0 +1,55 @@
+services:
+  acme-onem2m-cse:
+    image: r3dpanda1/acme-onem2m-cse
+    container_name: room-mn-cse
+    ports:
+      - "8081:8081"
+    environment:
+      - MNCSE_HOST
+      - MNCSE_PORT
+      - MNCSE_ID
+      - MNCSE_NAME
+      - INCSE_HOST
+      - INCSE_PORT
+      - INCSE_ID
+      - INCSE_NAME
+    volumes:
+      - ./cse:/data
+      - acme-data:/opt/ACME-oneM2M-CSE/data
+    networks:
+      - onem2m-net
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+
+  switchbot-sensor:
+    build:
+      context: ./sensor
+      dockerfile: Dockerfile.sensor
+    container_name: switchbot-sensor
+    depends_on:
+      - acme-onem2m-cse
+    environment:
+      # SwitchBot Configuration
+      - SWITCHBOT_MAC
+      - BLE_ADAPTER
+      # oneM2M CSE Configuration (override host to localhost since network_mode is host)
+      - MNCSE_HOST
+      - MNCSE_PORT
+      - MNCSE_NAME
+      - ORIGINATOR
+      - POLL_INTERVAL
+      - ROOM_CONTAINER
+    network_mode: host
+    privileged: true
+    restart: unless-stopped
+    volumes:
+      - /var/run/dbus:/var/run/dbus:ro
+
+volumes:
+  acme-data:
+  acme-init:
+
+networks:
+  onem2m-net:
+    driver: bridge

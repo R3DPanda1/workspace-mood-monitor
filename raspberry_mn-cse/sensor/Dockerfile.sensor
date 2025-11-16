@@ -1,0 +1,23 @@
+FROM python:3.11-slim
+
+# Install system dependencies for BLE
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    bluez \
+    libglib2.0-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+RUN pip install --no-cache-dir \
+    bleak>=0.21.0 \
+    pyswitchbot>=0.40.0 \
+    requests>=2.31.0
+
+# Copy sensor script
+COPY switchbot-sensor.py /app/switchbot-sensor.py
+RUN chmod +x /app/switchbot-sensor.py
+
+WORKDIR /app
+
+# Run the sensor script
+CMD ["python3", "-u", "switchbot-sensor.py"]

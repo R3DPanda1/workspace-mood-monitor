@@ -26,12 +26,7 @@ Cloud platform for the Workspace Mood Monitor system. Runs oneM2M IN-CSE, ingest
 
 ### 1. Environment Configuration
 
-```bash
-cp .env.example .env
-nano .env
-```
-
-Configure:
+Configure `docker-compose.yml` environment variables:
 - `POSTGRES_PASSWORD` - Database password
 - `GRAFANA_ADMIN_PASSWORD` - Grafana login
 - `INCSE_HOST=10.100.0.1` - Cloud VPN IP
@@ -56,7 +51,7 @@ done
 
 Open `http://your-server-ip:3000`
 - Username: `admin`
-- Password: (from `.env`)
+- Password: (set in `docker-compose.yml`)
 
 ## Verification
 
@@ -115,7 +110,6 @@ MN-CSE → WireGuard VPN → IN-CSE (8080)
 ```
 cloud/
 ├── docker-compose.yml
-├── .env.example
 ├── cse/                       # ACME CSE config
 ├── ingest/                    # Flask normalization service
 ├── mood-service/              # FastAPI mood computation
@@ -145,7 +139,7 @@ docker logs cloud-in-cse --tail 50
 
 ## Security
 
-- Change default passwords in `.env`
+- Change default passwords in `docker-compose.yml`
 - Use firewall to restrict port access
 - Only expose WireGuard (51820/udp) to public internet
 - Access CSE/Grafana via VPN or reverse proxy with HTTPS

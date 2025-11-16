@@ -4,6 +4,8 @@
 
 ESP32-S3 sensor node that monitors ambient environment (light, audio, occupancy) and provides LED feedback. Connects to the Application Entity (AE) in the Middle Node Common Services Entity (MN-CSE) via oneM2M protocol.
 
+![ESP32 Sensor Node](../images/sensornode.jpg)
+
 ## Project Overview
 
 The Mood Monitor system consists of:

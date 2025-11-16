@@ -303,7 +303,7 @@ def compute_mood_score(data):
 **Competition**: 2025 International oneM2M Hackathon
 
 **Members**:
-- Alper Ramadani
+- Alper Ramadan
 - Benjamin Karic
 - Tahir Toy
 

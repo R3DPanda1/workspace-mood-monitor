@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 SwitchBot CO2 Sensor -> OneM2M MoodMonitor
-Minimal implementation with CO2 ppm to mg/m3 conversion
+Minimal implementation - CO2 values reported in ppm
 """
 
 import os
@@ -50,18 +50,6 @@ except ImportError:
 def log(msg: str) -> None:
     """Simple timestamped logging"""
     print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {msg}", flush=True)
-
-
-def ppm_to_mg_m3(ppm: float, temp_celsius: float = 25.0) -> float:
-    """
-    Convert CO2 from ppm to mg/m^3
-    Formula: mg/m^3 = (ppm x molecular_weight) / molar_volume
-    CO2 molecular weight: 44.01 g/mol
-    Molar volume at temp: 24.45 L/mol at 25C (adjustable)
-    """
-    molecular_weight_co2 = 44.01  # g/mol
-    molar_volume = 24.45 * (273.15 + temp_celsius) / 298.15  # Adjusted for temperature
-    return round((ppm * molecular_weight_co2) / molar_volume, 2)
 
 
 async def scan_switchbot(mac: str, adapter: Optional[str] = None, timeout: int = 20) -> Dict[str, float]:
@@ -379,21 +367,20 @@ def setup_hierarchy() -> bool:
 
 
 def update_sensor(temp: float, humidity: float, co2_ppm: float) -> bool:
-    """Update airQualitySensor with temperature, humidity, and CO2 (converted to mg/m^3)"""
-    co2_mg_m3 = ppm_to_mg_m3(co2_ppm, temp)
+    """Update airQualitySensor with temperature, humidity, and CO2 (in ppm)"""
 
     payload = {
         "cod:aiQSr": {
             "tempe": temp,
             "humiy": humidity,
-            "co2": co2_mg_m3
+            "co2": co2_ppm
         }
     }
 
     try:
         r = onem2m_request("PUT", SENSOR_PATH, payload)
         if r.status_code in (200, 204):
-            log(f"Sensor updated: Temp={temp}C, Humidity={humidity}%, CO2={co2_ppm}ppm ({co2_mg_m3}mg/m^3)")
+            log(f"Sensor updated: Temp={temp}C, Humidity={humidity}%, CO2={co2_ppm}ppm")
             return True
         else:
             log(f"Sensor update failed: {r.status_code} - {r.text}")
@@ -430,7 +417,6 @@ def main() -> None:
     log(f"Sensor MAC: {SWITCHBOT_MAC}")
     log(f"CSE: {CSE_HOST}:{CSE_PORT}")
     log(f"Poll interval: {POLL_INTERVAL}s")
-    log("Note: CO2 values converted from ppm to mg/m^3")
 
     # Wait for CSE
     if not wait_for_cse():

@@ -28,16 +28,6 @@ IoT system that monitors workspace environmental conditions (CO₂, light, noise
 | | Grafana | Dashboards |
 | **Network** | WireGuard VPN | Secure site-to-cloud tunnel |
 
-### Mood Algorithm
-
-Weighted heuristic (0-100 score):
-- CO₂ (25%): 400-800 ppm optimal
-- Noise (20%): 30-50 dB optimal
-- Light (20%): 300-500 lux optimal
-- Temperature (15%): 20-24°C optimal
-- Humidity (10%): 30-60% optimal
-- Occupancy (10%): Presence detection
-
 **Result**: Score + Label (focus/neutral/tired) + LED color (green/yellow/red)
 
 ## Quick Start

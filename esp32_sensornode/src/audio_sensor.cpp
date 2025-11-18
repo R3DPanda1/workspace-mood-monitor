@@ -1,7 +1,8 @@
 /**
  * audio_sensor.cpp
  *
- * INMP441 sound level measurement and FreeRTOS task (standalone)
+ * INMP441 MEMS microphone - Sound level measurement in dB SPL
+ * Reads I2S audio data and converts to decibels (Sound Pressure Level)
  */
 
 #include "audio_sensor.h"
@@ -9,7 +10,7 @@
 #include "onem2m.h"
 #include <math.h>
 
-// ==================== GLOBAL STATE ====================
+// Global state
 AudioSensorState audioState = {
   .currentLevel = 0.0,
   .lastReportedLevel = -1.0,
@@ -19,7 +20,7 @@ AudioSensorState audioState = {
 
 static TaskHandle_t audioTaskHandle = NULL;
 
-// ==================== INITIALIZATION ====================
+// Initialize INMP441 I2S microphone
 bool initAudioSensor() {
   Serial.println("\n=== Initializing INMP441 Audio Sensor ===");
 
@@ -46,6 +47,7 @@ bool initAudioSensor() {
     Serial.println("ERROR: I2S driver install failed!");
     return false;
   }
+
   if (i2s_set_pin(I2S_NUM_0, &pin_config) != ESP_OK) {
     Serial.println("ERROR: I2S pin config failed!");
     return false;
@@ -62,26 +64,53 @@ bool initAudioSensor() {
   return true;
 }
 
-// ==================== READING AUDIO LEVEL ====================
+// Read audio level and convert to dB SPL
 bool readAudioLevel(double& level) {
-  if (!audioState.initialized) return false;
+  if (!audioState.initialized) {
+    return false;
+  }
 
   int32_t i2s_data[I2S_READ_LEN];
   size_t bytes_read;
 
-  if (i2s_read(I2S_NUM_0, &i2s_data, sizeof(i2s_data), &bytes_read, 100) != ESP_OK)
+  if (i2s_read(I2S_NUM_0, &i2s_data, sizeof(i2s_data), &bytes_read, 100) != ESP_OK) {
     return false;
+  }
 
   int samples = bytes_read / 4;
-  double sum = 0;
+  double sum = 0.0;
+
+  // Calculate RMS from I2S samples
   for (int i = 0; i < samples; i++) {
+    // INMP441 outputs 24-bit data in 32-bit words (left-aligned)
+    // Shift right by 8 to extract the 24-bit signed value
     int32_t sample = i2s_data[i] >> 8;
     sum += (double)sample * (double)sample;
   }
 
   double rms = sqrt(sum / samples);
-  level = rms / 50;  // scale factor, adjust for your mic
-  if (level > 1023) level = 1023;
+
+  // Convert RMS to dB SPL (Sound Pressure Level)
+  //
+  // From INMP441 datasheet (https://invensense.tdk.com/wp-content/uploads/2015/02/INMP441.pdf):
+  //   - Sensitivity: -26 dBFS at 94 dB SPL (1 kHz reference)
+  //   - 24-bit output format
+  //
+  // Calculation:
+  //   - Full scale = 2^23 = 8,388,608 (max amplitude for 24-bit signed)
+  //   - dBFS = 20 * log10(rms / full_scale)
+  //   - At -26 dBFS → 94 dB SPL, therefore at 0 dBFS → 94 - (-26) = 120 dB SPL
+  //   - Final formula: dB_SPL = 20 * log10(rms / full_scale) + 120
+
+  const double FULL_SCALE = 8388608.0;  // 2^23
+  const double DB_OFFSET = 120.0;       // Derived from -26 dBFS = 94 dB SPL
+
+  if (rms > 0) {
+    level = 20.0 * log10(rms / FULL_SCALE) + DB_OFFSET;
+  } else {
+    level = 0.0;
+  }
+
   return true;
 }
 
@@ -98,34 +127,33 @@ void setLastReportedAudioLevel(float level) {
   xSemaphoreGive(audioState.mutex);
 }
 
-// ==================== FREE RTOS TASK ====================
+// FreeRTOS task for periodic audio monitoring
 void AudioSensorTask(void* pvParameters) {
-    Serial.println("AudioSensorTask started");
-    TickType_t lastWake = xTaskGetTickCount();
-    const TickType_t interval = pdMS_TO_TICKS(AUDIO_UPDATE_INTERVAL);
+  Serial.println("AudioSensorTask started");
+  TickType_t lastWake = xTaskGetTickCount();
+  const TickType_t interval = pdMS_TO_TICKS(AUDIO_UPDATE_INTERVAL);
 
-    while (true) {
-        double currentLevel;
-        if (readAudioLevel(currentLevel)) {
-            xSemaphoreTake(audioState.mutex, portMAX_DELAY);
-            audioState.currentLevel = currentLevel;
-            xSemaphoreGive(audioState.mutex);
+  while (true) {
+    double currentLevel;
+    if (readAudioLevel(currentLevel)) {
+      xSemaphoreTake(audioState.mutex, portMAX_DELAY);
+      audioState.currentLevel = currentLevel;
+      xSemaphoreGive(audioState.mutex);
 
-            double last = getLastReportedAudioLevel();
-            bool shouldReport = (last < 0) || (fabs(currentLevel - last) >= AUDIO_THRESHOLD);
+      double last = getLastReportedAudioLevel();
+      bool shouldReport = (last < 0) || (fabs(currentLevel - last) >= AUDIO_THRESHOLD);
 
-            if (shouldReport) {
-                // Update OneM2M
-                if (updateAudioValue(currentLevel)) {
-                    setLastReportedAudioLevel(currentLevel);
-                }
-            }
-        } else {
-            Serial.println("ERROR: Failed to read audio sensor");
+      if (shouldReport) {
+        if (updateAudioValue(currentLevel)) {
+          setLastReportedAudioLevel(currentLevel);
         }
-
-        vTaskDelayUntil(&lastWake, interval);
+      }
+    } else {
+      Serial.println("ERROR: Failed to read audio sensor");
     }
+
+    vTaskDelayUntil(&lastWake, interval);
+  }
 }
 
 bool startAudioSensorTask() {

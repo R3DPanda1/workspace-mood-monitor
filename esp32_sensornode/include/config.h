@@ -2,11 +2,11 @@
 #define CONFIG_H
 
 // WiFi
-#define WIFI_SSID "wifi_ssid"
-#define WIFI_PASSWORD "wifi_password"
+#define WIFI_SSID "UPCEAB74BA"
+#define WIFI_PASSWORD "ah6JpNn7auhc"
 
 // OneM2M CSE
-#define CSE_HOST "raspberry_ip"
+#define CSE_HOST "192.168.0.38"
 #define CSE_PORT 8081
 #define CSE_NAME "room-mn-cse"
 #define ORIGINATOR "CMoodMonitor"
@@ -26,7 +26,7 @@
 
 // Thresholds
 #define LUX_THRESHOLD 1.0f
-#define AUDIO_THRESHOLD 5.0f
+#define AUDIO_THRESHOLD 2.0f  // dB change threshold
 
 // Occupancy automation
 #define SYNC_OCCUPANCY_TO_LAMP true  // Set to false to disable automatic lamp control

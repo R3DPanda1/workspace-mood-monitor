@@ -4,6 +4,8 @@
 
 Raspberry Pi running a Middle Node CSE that bridges local BLE sensors to the cloud IN-CSE. Collects data from SwitchBot Meter Plus (CO₂, temperature, humidity) and forwards to cloud via WireGuard VPN.
 
+![MN-CSE Architecture](../images/MN-CSE.png)
+
 ## Components
 
 | Component | Purpose |
@@ -78,21 +80,6 @@ docker logs -f switchbot-sensor
 Expected output:
 ```
 [2025-11-16 10:30:35] Sensor updated: Temp=23.5C, Humidity=45%, CO2=850ppm
-```
-
-## OneM2M Resource Structure
-
-```
-room-mn-cse (MN-CSE)
-└── moodMonitorAE
-    └── Room01
-        └── deviceAirQualityMonitor (cod:dAQMr)
-            ├── airQualitySensor (cod:aiQSr) [announced to cloud]
-            │   ├── tempe: float (°C)
-            │   ├── humiy: float (%)
-            │   └── co2: float (ppm)
-            └── battery (cod:bat)
-                └── lvl: int (%)
 ```
 
 ## SwitchBot Sensor Details

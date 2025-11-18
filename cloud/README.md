@@ -4,6 +4,8 @@
 
 Cloud platform for the Workspace Mood Monitor system. Runs oneM2M IN-CSE, ingests sensor telemetry, computes mood scores, controls LED feedback, and provides Grafana dashboards.
 
+![IN-CSE Architecture](../images/IN-CSE.png)
+
 ![Grafana Dashboard](../images/Grafana.png)
 
 ## Services
@@ -93,17 +95,6 @@ MN-CSE → WireGuard VPN → IN-CSE (8080)
                 ↓                    (via IN-CSE)
             Grafana (3000)
 ```
-
-## Supported Metrics
-
-| Metric | Synonyms | Unit |
-|--------|----------|------|
-| temperature | temp, tempe | °C |
-| humidity | rh, humiy | % |
-| co2 | co2ppm | ppm |
-| lux | lux | lux |
-| noise | louds | dB |
-| occupancy | occ | count |
 
 ## File Structure
 

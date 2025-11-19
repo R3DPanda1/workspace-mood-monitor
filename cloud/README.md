@@ -15,7 +15,7 @@ Cloud platform for the Workspace Mood Monitor system. Runs oneM2M IN-CSE, ingest
 | **acme** | oneM2M IN-CSE server | 8080 |
 | **ingest** | Normalize telemetry, store in DB | 8088 |
 | **ingest-worker** | Background queue processor | - |
-| **mood** | Compute mood scores, control LEDs | 8087 |
+| **mood-ml** | ML-powered mood scoring & LED control | 8090 (host), 8088 (container) |
 | **postgres** | Database (telemetry + mood) | 5432 (internal) |
 | **grafana** | Dashboards | 3000 |
 
@@ -65,9 +65,41 @@ curl http://localhost:8080/~/id-cloud-in-cse
 docker exec -i onem2m_postgres psql -U onem2m -d onem2m \
   -c "SELECT * FROM fact_telemetry ORDER BY ts_cse DESC LIMIT 5;"
 
-# View mood scores
+# View ML mood scores
 docker exec -i onem2m_postgres psql -U onem2m -d onem2m \
-  -c "SELECT * FROM fact_mood ORDER BY inserted_at DESC LIMIT 5;"
+  -c "SELECT * FROM fact_mood_ml ORDER BY inserted_at DESC LIMIT 5;"
+
+# Check ML service logs
+docker logs -f mood-ml
+```
+
+## Machine Learning Mood Service
+
+The mood-ml service uses a trained scikit-learn model to predict workspace mood scores based on sensor data.
+
+**Key Features:**
+- ML model predictions blended with heuristic fallback
+- Runtime calibration via environment variables
+- Per-room/desk sensor value caching
+- Automatic LED color control
+- Debug mode for model tuning
+
+**Configuration:**
+See [mood-service-ml/README.md](mood-service-ml/README.md) for:
+- ML model training tutorial
+- Environment variable tuning guide
+- Feature engineering tips
+- Alternative model architectures
+
+**Quick tuning:**
+```yaml
+# docker-compose.yml - mood-ml service
+environment:
+  - ML_BLEND_HEURISTIC=0.2    # 0=pure ML, 1=pure heuristic
+  - SOFTENING_FACTOR=0.9       # Score smoothing
+  - SCORE_BIAS=10              # Positive bias for borderline scores
+  - THRESHOLD_FOCUS=70         # "focus" label threshold
+  - MOOD_ML_DEBUG=1            # Enable debug output
 ```
 
 ## WireGuard VPN
@@ -87,12 +119,13 @@ MN-CSE → WireGuard VPN → IN-CSE (8080)
                             ↓
                       PostgreSQL
                             ↓
-                    Mood Service (8087)
+                Mood ML Service (8088)
                             ↓
                 ┌───────────┴────────────┐
                 ↓                        ↓
            PostgreSQL               LED Control
-                ↓                    (via IN-CSE)
+        (fact_mood_ml)            (via IN-CSE)
+                ↓
             Grafana (3000)
 ```
 
@@ -103,7 +136,7 @@ cloud/
 ├── docker-compose.yml
 ├── cse/                       # ACME CSE config
 ├── ingest/                    # Flask normalization service
-├── mood-service/              # FastAPI mood computation
+├── mood-service-ml/           # ML-powered mood computation (FastAPI)
 ├── postgres/                  # Database init + migrations
 ├── grafana/                   # Dashboard provisioning
 └── wireguard-onem2m-setup/    # VPN tutorial + examples

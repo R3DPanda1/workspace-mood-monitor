@@ -23,7 +23,7 @@ IoT system that monitors workspace environmental conditions (CO₂, light, noise
 | **Local** | Raspberry Pi MN-CSE (ACME) | oneM2M local server |
 | **Cloud** | IN-CSE (ACME) | oneM2M cloud server |
 | | Ingest Service (Flask) | Normalize telemetry |
-| | Mood Service (FastAPI) | Compute scores, control LEDs |
+| | Mood ML Service (FastAPI) | ML-powered mood scoring & LED control |
 | | PostgreSQL | Store telemetry & mood data |
 | | Grafana | Dashboards |
 | **Network** | WireGuard VPN | Secure site-to-cloud tunnel |
@@ -64,7 +64,7 @@ pio run -t upload
 ├── raspberry_mn-cse/          # Raspberry Pi MN-CSE + BLE service
 ├── cloud/                     # Cloud IN-CSE + analytics
 │   ├── ingest/                # Flask normalization service
-│   ├── mood-service/          # FastAPI mood computation
+│   ├── mood-service-ml/       # ML-powered mood computation (FastAPI)
 │   ├── postgres/              # Database schema + migrations
 │   ├── grafana/               # Dashboard provisioning
 │   └── wireguard-onem2m-setup/ # VPN config examples

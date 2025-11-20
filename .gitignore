@@ -1,0 +1,40 @@
+# TLS Certificates - DO NOT COMMIT PRIVATE KEYS
+certs/
+cloud/cse/cert/
+raspberry_mn-cse/cse/cert/
+*.key
+*.crt
+*.csr
+*.pem
+
+# Environment files
+.env
+**/.env
+
+# Logs
+logs/
+*.log
+
+# Database files
+*.db
+*.db-journal
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

@@ -31,7 +31,7 @@ logs/
 *-bkp.py
 
 # ML models (regenerate with create_model.py)
-*.pkl
+# *.pkl
 
 # Docker volumes
 postgres-data/

@@ -7,10 +7,6 @@ raspberry_mn-cse/cse/cert/
 *.csr
 *.pem
 
-# Environment files
-.env
-**/.env
-
 # Logs
 logs/
 *.log

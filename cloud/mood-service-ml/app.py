@@ -152,7 +152,6 @@ def score_to_led_color(score: int) -> str:
     b = 0
     return f"#{r:02X}{g:02X}{b:02X}"
 
-
 def hex_to_rg(hex_color: str) -> Dict[str, int]:
     try:
         s = hex_color.strip()
@@ -508,7 +507,7 @@ async def notify(request: Request):
         logger.exception("Lamp color PUT step failed")
 
     # Post to CSE like mood-service
-    target = os.getenv("CSE_BASE", "http://cloud-in-cse:8080/CRoom01Admin/moodAnalysis").rstrip("/")
+    target = os.getenv("CSE_BASE", "http://cloud-in-cse:8080/~/id-room-mn-cse/-/moodMonitorAE/Room01/moodAnalysis").rstrip("/")
     try:
         resp = one_m2m_post_cin(target, mood)
         logger.info("Mood CIN posted (ML), status %s (target=%s)", resp.status_code, target)

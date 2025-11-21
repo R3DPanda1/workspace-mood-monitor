@@ -38,6 +38,7 @@ See [wireguard_tutorial.md](wireguard_tutorial.md) for VPN setup.
 ### 3. Find SwitchBot MAC Address
 
 ```bash
+# Download the SwitchBot Phone App, connect to sensor, go into sensor settings, then Device Info
 sudo hcitool lescan
 # Look for "WoIOSensorTH" device
 ```

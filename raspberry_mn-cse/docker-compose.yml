@@ -22,6 +22,7 @@ services:
     tty: true
     restart: unless-stopped
 
+# SwitchBot IPE: BLE -> OneM2M REST
   switchbot-sensor:
     build:
       context: ./sensor

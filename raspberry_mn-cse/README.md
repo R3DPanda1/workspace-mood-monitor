@@ -121,7 +121,7 @@ raspberry_mn-cse/
 ├── .env.example
 ├── wireguard_tutorial.md
 ├── cse/                    # ACME MN-CSE data
-└── sensor/                 # SwitchBot BLE service
+└── sensor/                 # SwitchBot IPE service (BLE-> OneM2M REST)
     ├── Dockerfile.sensor
     └── switchbot-sensor.py
 ```
